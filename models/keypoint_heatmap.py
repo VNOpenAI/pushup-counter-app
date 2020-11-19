@@ -6,10 +6,11 @@ from resnest.torch import resnest50, resnest101, resnest200, resnest269, resnest
 from .resnest_head import ResNeSt_head
 import torchvision.transforms as transforms
 
-class KeypointModel():
-
+class KeypointHeatmapModel():
 
     def __init__(self, checkpoint, img_size=(225,225)):
+
+        torch.set_num_threads(8)
 
         # Build model and load weight
         if torch.cuda.is_available():
@@ -31,10 +32,10 @@ class KeypointModel():
 
 
     def build_model(self):
-        pre_model = resnest50(pretrained=True)
+        pre_model = resnest50(pretrained=False)
         # Unfreeze model weights
         for param in pre_model.parameters():
-            param.requires_grad = True
+            param.requires_grad = False
         model = ResNeSt_head(pre_model)
 
         return model

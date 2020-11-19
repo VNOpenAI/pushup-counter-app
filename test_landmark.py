@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
-from  models.keypoint_model import KeypointModel
+from  models.keypoint_heatmap import KeypointHeatmapModel
 
-keypoint_model_path = "data/models/keypoint/resnest50_heatmap_waug_fps-finetune_1911.pt"
+keypoint_model_path = "data/models/keypoint/epoch5.pt"
 test_video_path = "test_data/154.mp4"
 
-model = KeypointModel(keypoint_model_path, img_size=(225, 225))
+model = KeypointHeatmapModel(keypoint_model_path, img_size=(225, 225))
 
 cap = cv2.VideoCapture(test_video_path)
 if cap is None:
