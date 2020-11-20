@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 from models.ttt_net import TTTnet
 import onnx
 from tensorflow.keras.models import load_model
+import onnxruntime
 
 class KeypointHeatmapModel():
 
@@ -27,8 +28,6 @@ class KeypointHeatmapModel():
         # Create the right input shape (e.g. for an image)
         dummy_input = torch.randn(1, 3, img_size[1], img_size[0])
         torch.onnx.export(self.model, dummy_input, "tmp.onnx")
-        self.model.to(self.device)
-        self.model.eval()
         self.img_size = img_size
 
         # Init transformation
@@ -36,15 +35,11 @@ class KeypointHeatmapModel():
                                     transforms.Resize(img_size[:2]),
                                     transforms.ToTensor()])
 
+        self.ort_session = onnxruntime.InferenceSession("tmp.onnx")
 
-    # def build_model(self):
-    #     pre_model = resnest50(pretrained=False)
-    #     # Unfreeze model weights
-    #     for param in pre_model.parameters():
-    #         param.requires_grad = False
-    #     model = ResNeSt_head(pre_model)
 
-    #     return model
+    def to_numpy(self, tensor):
+        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
     def build_model(self):
         model = TTTnet(21, 3)
@@ -52,21 +47,24 @@ class KeypointHeatmapModel():
 
 
     def predict(self, origin_img):
-        with torch.no_grad() as tng:
-            oh, ow = origin_img.shape[:2]
-            img = self.trans(origin_img)
-            img = torch.unsqueeze(img, 0)
-            img = img.to(self.device)
-            preds = self.model(img)
-            preds = preds.cpu().numpy()[0]
-            coor_x = []
-            coor_y = []
-            for i,pred in enumerate(preds[:7]):
-                cx = np.argmax(pred)%pred.shape[0]
-                cy = np.argmax(pred)//pred.shape[0]
-                ovx = preds[i+7][cy,cx]*15
-                ovy = preds[i+14][cy,cx]*15
-                coor_x.append(int((cx*15+ovx)*ow/self.img_size[1]))
-                coor_y.append(int((cy*15+ovy)*oh/self.img_size[0]))
-            preds = np.vstack([coor_x, coor_y]).T
-            return preds
+        # with torch.no_grad() as tng:
+        oh, ow = origin_img.shape[:2]
+        img = self.trans(origin_img)
+        img = torch.unsqueeze(img, 0)
+
+        ort_inputs = {self.ort_session.get_inputs()[0].name: self.to_numpy(img)}
+        ort_outs = self.ort_session.run(None, ort_inputs)
+        preds = ort_outs[0][0]
+
+        # preds = preds.cpu().numpy()[0]
+        coor_x = []
+        coor_y = []
+        for i,pred in enumerate(preds[:7]):
+            cx = np.argmax(pred)%pred.shape[0]
+            cy = np.argmax(pred)//pred.shape[0]
+            ovx = preds[i+7][cy,cx]*15
+            ovy = preds[i+14][cy,cx]*15
+            coor_x.append(int((cx*15+ovx)*ow/self.img_size[1]))
+            coor_y.append(int((cy*15+ovy)*oh/self.img_size[0]))
+        preds = np.vstack([coor_x, coor_y]).T
+        return preds

@@ -119,21 +119,15 @@ def get_img_from_fig(fig, dpi=180):
     return img
 
 
-def smooth(x, window_len=11):
-    if window_len < 3:
-        return x
-    s = np.r_[x[window_len-1:0:-1], x, x[-2:-window_len-1:-1]]
-    w = np.ones(window_len, 'd')
-    y = np.convolve(w/w.sum(), s, mode='valid')
-    y = y[window_len-1:]
-    return y
-
-
-def plot_signal(x, min_val, max_val):
+def plot_signal(x, min_val, max_val, peaks=None):
 
     x = np.array(x)
     width = 800
     height = 200
+    len_x = len(x)
+    y = np.array(range(len_x))
+    y = y * 800.0 / len_x
+    y = y.astype(int)
 
     if len(x) > 800:
         x = x[:-800]
@@ -141,8 +135,12 @@ def plot_signal(x, min_val, max_val):
     img = np.zeros((height, width, 3), dtype=np.uint8)
 
     for i in range(1, len(x)):
-        p1 = (i, int(height - x[i]))
-        p2 = (i-1, int(height - x[i-1]))
+        p1 = (y[i], int(height - x[i]))
+        p2 = (y[i-1], int(height - x[i-1]))
         img = cv2.line(img, p1, p2, (0, 255, 0), 2)
+
+    if peaks is not None:
+        for p in peaks:
+            img[:, y[p]-1:y[p]+1] = (0, 0, 255)
 
     return img

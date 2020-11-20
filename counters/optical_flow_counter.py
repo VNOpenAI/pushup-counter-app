@@ -1,17 +1,19 @@
 import time
+import math
 from threading import Thread
 
 import cv2
 import numpy as np
-from utils.common import plot_signal, smooth
+from utils.common import plot_signal
 from utils.video_grabber import VideoGrabber
-
+from counters.signal_processing import *
+from counters.find_peaks_running import RealtimePeakDetector
 class OpticalFlowCounter:
     """
     Counter using optical flow
     """
 
-    def __init__(self, video_grabber: VideoGrabber, counting_var: list, sample_time=0.01, img_size=(256, 256), max_seq_len=800):
+    def __init__(self, video_grabber: VideoGrabber, counting_var: list, sample_time=0.01, img_size=(256, 256), max_seq_len=200):
         """
         Args:
             video_grabber (VideoGrabber)
@@ -27,6 +29,8 @@ class OpticalFlowCounter:
         self.angle_seq = [0] * max_seq_len
         self.magnitude_seq = [0] * max_seq_len
         self.max_seq_len = max_seq_len
+        self.peaks = [0] * max_seq_len
+        self.rt_reak_finder = RealtimePeakDetector(self.angle_seq, 10, 2.5, 0.4)
 
     def start(self):    
         t = Thread(target=self.get, args=())
@@ -55,18 +59,19 @@ class OpticalFlowCounter:
                                         0.5, 3, 15, 3, 5, 1.2, 0)
         magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1]) 
         angle = angle * 180 / np.pi / 2
-        
-        self.angle_seq.append(np.sum(angle * magnitude) / np.sum(magnitude))
-        self.angle_seq = self.strip_arr(self.angle_seq)
-        self.magnitude_seq.append(np.mean(magnitude))
-        self.magnitude_seq = self.strip_arr(self.magnitude_seq)
 
-        angle_smooth = smooth(self.angle_seq, window_len=5)
-        img = plot_signal(angle_smooth, 0, 360)
+        new_angle = np.sum(angle * magnitude) / np.sum(magnitude)
+        is_peak = self.rt_reak_finder.thresholding_algo(new_angle)
+        self.peaks.append(is_peak)
+        self.peaks = self.strip_arr(self.peaks)
+        self.signals = self.rt_reak_finder.y
+
+        img = plot_signal(self.strip_arr(self.signals), 0, 180)
         cv2.imshow("Angle", img)
         cv2.waitKey(1)
-        img = plot_signal(self.magnitude_seq, 0, 30)
-        cv2.imshow("Magnitude", img)
+
+        img = plot_signal(self.strip_arr(self.peaks), 0, 1)
+        cv2.imshow("is_peak", img)
         cv2.waitKey(1)
 
 

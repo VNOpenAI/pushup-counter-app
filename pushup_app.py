@@ -1,14 +1,15 @@
+# https://stackoverflow.com/questions/22583391/peak-signal-detection-in-realtime-timeseries-data/56451135#56451135
 import threading
 import time
 
 import cv2
 import numpy as np
 
-from models.keypoint_heatmap import KeypointHeatmapModel
+from models.keypoint_heatmap_keras import KeypointHeatmapModel
 from utils.video_grabber import VideoGrabber
 from counters.optical_flow_counter import OpticalFlowCounter
 
-keypoint_model_path = "data/models/keypoint/epoch5.pt"
+keypoint_model_path = "data/models/keypoint/epoch81.pt"
 test_video_path = "test_data/154.mp4"
 video_grabber = VideoGrabber(test_video_path).start()
 counter = OpticalFlowCounter(video_grabber, [0], sample_time=0.05).start()
