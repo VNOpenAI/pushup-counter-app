@@ -6,10 +6,12 @@ import numpy as np
 
 from models.keypoint_heatmap import KeypointHeatmapModel
 from utils.video_grabber import VideoGrabber
+from counters.optical_flow_counter import OpticalFlowCounter
 
 keypoint_model_path = "data/models/keypoint/epoch5.pt"
 test_video_path = "test_data/154.mp4"
 video_grabber = VideoGrabber(test_video_path).start()
+counter = OpticalFlowCounter(video_grabber, [0], sample_time=0.05).start()
 
 model = KeypointHeatmapModel(keypoint_model_path, img_size=(225, 225))
 
@@ -23,6 +25,7 @@ def heatmap_thread(video_grabber, model, points_arr):
 
 points_arr = [[]]
 t_heatmap = threading.Thread(target=heatmap_thread, args=(video_grabber, model, points_arr))
+t_heatmap.daemon = True
 t_heatmap.start()
 
 
@@ -40,4 +43,4 @@ while not video_grabber.is_stopped():
     cv2.polylines(draw, [pts], True, (0,0,255), 3)
 
     cv2.imshow("Result", draw)
-    cv2.waitKey(1)
+    cv2.waitKey(10)

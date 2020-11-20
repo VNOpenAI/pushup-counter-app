@@ -1,9 +1,10 @@
 import os
+import io
 import numpy as np
 import cv2
 import scipy.io as sio
 from math import cos, sin
-from imutils import face_utils
+
 
 def get_list_from_filenames(file_path):
     with open(file_path) as f:
@@ -97,3 +98,82 @@ def get_loosen_bbox(shape, img, input_size):
     scale_x = float(input_size[0]) / (end_x - start_x)
     scale_y = float(input_size[1]) / (end_y - start_y)
     return (start_x, start_y, end_x, end_y), scale_x, scale_y
+
+
+def get_img_from_fig(fig, dpi=180):
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=dpi)
+    buf.seek(0)
+    img_arr = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+    buf.close()
+    img = cv2.imdecode(img_arr, 1)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    return img
+
+
+def smooth(x,window_len=11,window='hanning'):
+    """smooth the data using a window with requested size.
+    
+    This method is based on the convolution of a scaled window with the signal.
+    The signal is prepared by introducing reflected copies of the signal 
+    (with the window size) in both ends so that transient parts are minimized
+    in the begining and end part of the output signal.
+    
+    input:
+        x: the input signal 
+        window_len: the dimension of the smoothing window; should be an odd integer
+        window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
+            flat window will produce a moving average smoothing.
+
+    output:
+        the smoothed signal
+        
+    example:
+
+    t=linspace(-2,2,0.1)
+    x=sin(t)+randn(len(t))*0.1
+    y=smooth(x)
+    
+    see also: 
+    
+    np.hanning, np.hamming, np.bartlett, np.blackman, np.convolve
+    scipy.signal.lfilter
+ 
+    TODO: the window parameter could be the window itself if an array instead of a string
+    NOTE: length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    """
+
+    if window_len<3:
+        return x
+
+
+    s=np.r_[x[window_len-1:0:-1],x,x[-2:-window_len-1:-1]]
+    #print(len(s))
+    if window == 'flat': #moving average
+        w=np.ones(window_len,'d')
+    else:
+        w=eval('np.'+window+'(window_len)')
+
+    y=np.convolve(w/w.sum(),s,mode='valid')
+    return y
+
+
+def plot_signal(x, min_val, max_val):
+    
+    x = np.array(x)
+    width = 800
+    height = 200
+
+    if len(x) > 800:
+        x = x[:-800]
+    x = (x - min_val) / (max_val - min_val) * height
+    img = np.zeros((height, width, 3), dtype=np.uint8)
+
+    for i in range(1, len(x)):
+        p1 = (i, int(height - x[i]))
+        p2 = (i-1, int(height - x[i-1]))
+        img = cv2.line(img, p1, p2, (0, 255, 0), 2)
+
+    return img
+    

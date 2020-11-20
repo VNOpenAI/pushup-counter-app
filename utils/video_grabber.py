@@ -1,6 +1,7 @@
 from threading import Thread
 import cv2
 import time
+from  models.pushup_or_not import PushupOrNotModel
 
 class VideoGrabber:
     """
@@ -27,7 +28,9 @@ class VideoGrabber:
         self.stopped = False
 
     def start(self):    
-        Thread(target=self.get, args=()).start()
+        t = Thread(target=self.get, args=())
+        t.daemon = True
+        t.start()
         return self
 
     def get(self):

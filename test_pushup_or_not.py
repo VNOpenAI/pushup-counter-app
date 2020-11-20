@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import utils
+import utils.common as utils
 from  models.pushup_or_not import PushupOrNotModel
 
 model_path = "data/models/pushup_or_not/mobilenetv2_pushup_classify_ep096.h5"
@@ -37,7 +37,7 @@ ret, frame = cap.read()
 cv2.namedWindow("Result", cv2.WINDOW_NORMAL)
 while ret:
 
-    image = preprocess_img(frame, desired_size=112)
+    image = preprocess_img(frame, desired_size=128)
     is_pushing_up = model.predict(image)
 
     points = []
