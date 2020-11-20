@@ -6,6 +6,9 @@ from resnest.torch import resnest50, resnest101, resnest200, resnest269, resnest
 from .resnest_head import ResNeSt_head
 import torchvision.transforms as transforms
 from models.ttt_net import TTTnet
+import onnx
+from tensorflow.keras.models import load_model
+
 class KeypointHeatmapModel():
 
     def __init__(self, checkpoint, img_size=(225,225)):
@@ -21,6 +24,9 @@ class KeypointHeatmapModel():
         checkpoint = torch.load(checkpoint, map_location=map_location)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.load_state_dict(checkpoint)
+        # Create the right input shape (e.g. for an image)
+        dummy_input = torch.randn(1, 3, img_size[1], img_size[0])
+        torch.onnx.export(self.model, dummy_input, "tmp.onnx")
         self.model.to(self.device)
         self.model.eval()
         self.img_size = img_size

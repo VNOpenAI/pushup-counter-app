@@ -3,9 +3,8 @@ from threading import Thread
 
 import cv2
 import numpy as np
-from utils.common import plot_signal
+from utils.common import plot_signal, smooth
 from utils.video_grabber import VideoGrabber
-
 
 class OpticalFlowCounter:
     """
@@ -62,7 +61,8 @@ class OpticalFlowCounter:
         self.magnitude_seq.append(np.mean(magnitude))
         self.magnitude_seq = self.strip_arr(self.magnitude_seq)
 
-        img = plot_signal(self.angle_seq, 0, 360)
+        angle_smooth = smooth(self.angle_seq, window_len=5)
+        img = plot_signal(angle_smooth, 0, 360)
         cv2.imshow("Angle", img)
         cv2.waitKey(1)
         img = plot_signal(self.magnitude_seq, 0, 30)

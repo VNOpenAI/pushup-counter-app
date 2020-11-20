@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from  models.keypoint_heatmap import KeypointHeatmapModel
+from  models.keypoint_heatmap_keras import KeypointHeatmapModel
 
 keypoint_model_path = "data/models/keypoint/epoch81.pt"
 test_video_path = "test_data/154.mp4"

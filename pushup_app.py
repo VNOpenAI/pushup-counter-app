@@ -43,4 +43,4 @@ while not video_grabber.is_stopped():
     cv2.polylines(draw, [pts], True, (0,0,255), 3)
 
     cv2.imshow("Result", draw)
-    cv2.waitKey(10)
+    cv2.waitKey(1)
