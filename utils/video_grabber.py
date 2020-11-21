@@ -1,8 +1,15 @@
-from threading import Thread, Lock
-import cv2
 import time
+import tkinter as tk
+from threading import Lock, Thread
+from tkinter import filedialog, messagebox, simpledialog
+
+import cv2
 import imutils
-from  models.pushup_or_not import PushupOrNotModel
+from models.pushup_or_not import PushupOrNotModel
+from utils.common import is_int
+
+root = tk.Tk()
+root.withdraw()
 
 class VideoGrabber:
     """
@@ -13,23 +20,46 @@ class VideoGrabber:
     def __init__(self, src=0, max_width=None):
 
         self.max_width = max_width
-        self.stream = cv2.VideoCapture(src)
         self.read_lock = Lock()
-        if self.stream is None:
-            print("Could not read from source:", src)
-            exit(1)
-        if isinstance(src, int):
-            self.source = "webcam"
-        else:
-            self.source = "video_file"
-            self.fps = self.stream.get(cv2.CAP_PROP_FPS)
-            self.spf = 1 / self.fps
-            self.last_frame_time = time.time()
-        
         self.default_frame = cv2.imread("images/background.jpg")
         self.frame = self.default_frame
         self.grabbed = True
         self.stopped = False
+        self.open_stream(src)
+
+
+    def open_stream(self, video_path):
+
+        self.grabbed = False
+        self.stopped = True
+
+        # Check source
+        if isinstance(video_path, int) or is_int(video_path):
+            video_path = int(video_path)
+            self.source = "webcam"
+        else:
+            self.source = "video_file"
+
+        self.stream = cv2.VideoCapture(video_path)
+        if self.stream is None:
+            messagebox.showerror("Error", "Could not read from source: {}".format(video_path))
+        if self.source == "video_file":
+            self.fps = self.stream.get(cv2.CAP_PROP_FPS)
+            self.spf = 1 / self.fps
+            self.last_frame_time = time.time()
+
+        self.grabbed = True
+        self.stopped = False
+
+    def choose_new_file(self):
+        file_path = filedialog.askopenfilename()
+        if file_path != "":
+            self.open_stream(file_path)
+
+    def open_camera(self):
+        answer = simpledialog.askstring("Input", "Please input camera source. Put 0 for the default webcam.", parent=root)
+        if answer != "":
+            self.open_stream(answer)
 
     def start(self):    
         t = Thread(target=self.get, args=())
@@ -38,7 +68,10 @@ class VideoGrabber:
         return self
 
     def get(self):
-        while not self.stopped:
+        while True:
+            if self.stopped:
+                time.sleep(1)
+                continue
             frame = None
             grabbed = False
             if self.source == "video_file":

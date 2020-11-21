@@ -67,7 +67,13 @@ class OpticalFlowCounter:
         magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1]) 
         angle = angle * 180 / np.pi / 2
 
-        new_angle = np.sum(angle * magnitude) / np.sum(magnitude)
+        sum_magnitude = np.sum(magnitude)
+        if sum_magnitude == 0:
+            new_angle = 0
+        else:
+            new_angle = np.sum(angle * magnitude) / sum_magnitude
+        if math.isnan(new_angle):
+            new_angle = 0
         is_peak = self.rt_peak_finder.thresholding_algo(new_angle)
         if self.prev_peak_value == 0 and is_peak == 1:
             self.increase_count()

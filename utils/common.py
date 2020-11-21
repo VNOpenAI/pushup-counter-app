@@ -211,3 +211,11 @@ def resize_and_pad(img, size, padColor=255):
     scaled_img = cv2.resize(scaled_img, size)
 
     return scaled_img
+
+
+def is_int(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False

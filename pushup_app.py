@@ -12,6 +12,7 @@ from utils.ui_drawer import UIDrawer
 
 keypoint_model_path = "data/models/2heads/efficientnetb2_2head_ep030.h5"
 test_video_path = "test_data/154.mp4"
+# test_video_path = "http://192.168.43.1:8080/video"
 
 video_grabber = VideoGrabber(test_video_path, max_width=224).start()
 counter = OpticalFlowCounter(video_grabber, sample_time=0.05).start()
@@ -48,4 +49,10 @@ while True:
     draw = ui_drawer.render()
 
     cv2.imshow("PushUp App", draw)
-    cv2.waitKey(1)
+    
+    k = cv2.waitKey(1)
+    k = k & 0xFF
+    if k == ord("o"):
+        video_grabber.choose_new_file()
+    elif k == ord("c"):
+        video_grabber.open_camera()
