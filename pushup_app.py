@@ -4,7 +4,6 @@ import time
 
 import cv2
 import numpy as np
-from torch.nn.modules.module import T
 
 from models.two_head import TwoHeadModel
 from utils.video_grabber import VideoGrabber
@@ -12,27 +11,29 @@ from counters.optical_flow_counter import OpticalFlowCounter
 
 keypoint_model_path = "data/models/2heads/efficientnetb2_2head_ep030.h5"
 test_video_path = "test_data/154.mp4"
-video_grabber = VideoGrabber(test_video_path).start()
+
+model = TwoHeadModel(keypoint_model_path, img_size=(224, 224))
+video_grabber = VideoGrabber(test_video_path, max_width=224).start()
 counter = OpticalFlowCounter(video_grabber, [0], sample_time=0.05).start()
 
-model = TwoHeadModel(keypoint_model_path, img_size=(225, 225))
 
-def heatmap_thread(video_grabber, model: TwoHeadModel, points_arr):
+def keypoint_thread(video_grabber, model: TwoHeadModel, points_arr):
     while True:
         if video_grabber is not None:
-            points, is_pushing_up = model.predict(video_grabber.get_frame())
+            frame = video_grabber.get_frame()
+            points, is_pushing_up = model.predict(frame)
             points_arr[0] = points
-        else:
-            time.sleep(100)
+
 
 points_arr = [[]]
-keypoint_t = threading.Thread(target=heatmap_thread, args=(video_grabber, model, points_arr))
+keypoint_t = threading.Thread(target=keypoint_thread, args=(video_grabber, model, points_arr))
 keypoint_t.daemon = True
 keypoint_t.start()
 
-
-cv2.namedWindow("Result", cv2.WINDOW_NORMAL)
-while not video_grabber.is_stopped():
+cv2.namedWindow("Result", 0)
+while True:
+    # if video_grabber.is_stopped():
+    #     time.sleep(1)
     
     draw = video_grabber.get_frame()
     points = points_arr[0]
