@@ -14,10 +14,30 @@ class FixedDropout(tf.keras.layers.Dropout):
         for axis, shape in enumerate(self.noise_shape)]
         return tuple(noise_shape)
 
+def landmark_loss(alpha=0.8, beta=0.2):
+    def landmark_loss_func(target, pred):
+        coor_x_t = target[:][:,::2]
+        coor_y_t = target[:,1:][:,::2]
+        coor_x_p = pred[:][:,::2]
+        coor_y_p = pred[:,1:][:,::2]
+        ra1_t = tf.math.atan2((coor_y_t[:,1] - coor_y_t[:,0]), (coor_x_t[:,1] - coor_x_t[:,0] + 1e-5))
+        ra1_p = tf.math.atan2((coor_y_p[:,1] - coor_y_p[:,0]), (coor_x_p[:,1] - coor_x_p[:,0] + 1e-5))
+        ra2_t = tf.math.atan2((coor_y_t[:,2] - coor_y_t[:,1]), (coor_x_t[:,2] - coor_x_t[:,1] + 1e-5))
+        ra2_p = tf.math.atan2((coor_y_p[:,2] - coor_y_p[:,1]), (coor_x_p[:,2] - coor_x_p[:,1] + 1e-5))
+        la1_t = tf.math.atan2((coor_y_t[:,-2] - coor_y_t[:,-1]), (coor_x_t[:,-2] - coor_x_t[:,-1] + 1e-5))
+        la1_p = tf.math.atan2((coor_y_p[:,-2] - coor_y_p[:,-1]), (coor_x_p[:,-2] - coor_x_p[:,-1] + 1e-5))
+        la2_t = tf.math.atan2((coor_y_t[:,-3] - coor_y_t[:,-2]), (coor_x_t[:,-3] - coor_x_t[:,-2] + 1e-5))
+        la2_p = tf.math.atan2((coor_y_p[:,-3] - coor_y_p[:,-2]), (coor_x_p[:,-3] - coor_x_p[:,-2] + 1e-5))
+        angle_loss = tf.math.reduce_mean(((ra1_t - ra1_p)/(8*np.pi))**2+((ra2_t - ra2_p)/(8*np.pi))**2+((la1_t - la1_p)/(8*np.pi))**2+((la2_t - la2_p)/(8*np.pi))**2)
+        bce_loss = tf.keras.losses.binary_crossentropy(target, pred)
+        lm_loss = alpha * bce_loss + beta * angle_loss
+        return lm_loss
+    return landmark_loss_func
+
 class TwoHeadModel():
 
     def __init__(self, model_path, img_size=(224, 224)):
-        self.model = load_model(model_path, custom_objects={'FixedDropout':FixedDropout})
+        self.model = load_model(model_path, custom_objects={'FixedDropout':FixedDropout, 'landmark_loss_func': landmark_loss()})
         self.img_size = img_size
 
     def predict(self, origin_img):
