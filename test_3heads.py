@@ -3,10 +3,11 @@ import numpy as np
 from utils import common
 from  models.three_head import ThreeHeadModel
 
+
+# Init model
 model_path = "data/models/3heads/efficientb3_3head_newloss_sigmoid_ep025.h5"
 test_video_path = "test_data/154.mp4"
 net_input_size = (224, 224)
-
 model = ThreeHeadModel(model_path=model_path, img_size=net_input_size)
 
 cap = cv2.VideoCapture(test_video_path)
