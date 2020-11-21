@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
-import utils
+from utils import common
 from  models.three_head import ThreeHeadModel
 
-model_path = "data/models/3heads/efficientb3_3head_3_ep003.h5"
+model_path = "data/models/3heads/efficientb3_3head_newloss_sigmoid_ep025.h5"
 test_video_path = "test_data/154.mp4"
 net_input_size = (224, 224)
 
@@ -47,7 +47,7 @@ while ret:
     for j in range(7):
         x = landmark[2 * j]
         y = landmark[2 * j + 1]
-        x, y = utils.unnormalize_landmark_point(
+        x, y = common.unnormalize_landmark_point(
             (x, y), net_input_size, scale=scale)
         x = int(x)
         y = int(y)
