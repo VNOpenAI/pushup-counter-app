@@ -2,7 +2,7 @@ import scipy.signal
 import numpy as np
 
 fs = 10; fcut = 0.5; cutoff = 2*fcut/fs
-filter_order = 3
+filter_order = 40
 filterParam = scipy.signal.firwin(filter_order, cutoff)
 
 def lfilter_smooth(data):

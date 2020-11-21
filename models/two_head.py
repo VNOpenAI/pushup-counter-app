@@ -38,6 +38,7 @@ class TwoHeadModel():
 
     def __init__(self, model_path, img_size=(224, 224)):
         self.model = load_model(model_path, custom_objects={'FixedDropout':FixedDropout, 'landmark_loss_func': landmark_loss()})
+        self.model.predict(np.zeros((1, 224, 224, 3), dtype=float))
         self.img_size = img_size
 
     def predict(self, origin_img):
@@ -64,7 +65,6 @@ class TwoHeadModel():
                 offset = np.array([left, top], dtype=float)
                 batch_landmarks[i] -= offset
                 batch_landmarks[i] = batch_landmarks[i] * scale
-               
 
             img_size = None
             if original_img_sizes is None:

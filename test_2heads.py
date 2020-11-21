@@ -3,7 +3,7 @@ import numpy as np
 from utils import common
 from  models.two_head import TwoHeadModel
 
-model_path = "data/models/2heads/efficientnetb2_2head_ep030.h5"
+model_path = "data/models/2heads/efficientnetb2_2head_angle_ep150.h5"
 test_video_path = "test_data/154.mp4"
 net_input_size = (224, 224)
 
