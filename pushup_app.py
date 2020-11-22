@@ -36,7 +36,8 @@ keypoint_t.daemon = True
 keypoint_t.start()
 
 
-cv2.namedWindow("PushUp App", 0)
+cv2.namedWindow("PushUp App", cv2.WINDOW_NORMAL)
+cv2.setWindowProperty("PushUp App", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 while True:
     
     video_frame = video_grabber.get_frame()
