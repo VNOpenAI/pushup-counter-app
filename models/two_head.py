@@ -45,7 +45,7 @@ class TwoHeadModel():
         batch_landmarks, batch_is_pushing_up = self.predict_batch(np.array([origin_img]))
         return batch_landmarks[0], batch_is_pushing_up[0]
 
-    def predict_batch(self, imgs, verbose=1, normalize=True):
+    def predict_batch(self, imgs, verbose=1):
         imgs, original_img_sizes, paddings = self.preprocessing(imgs)
         results = self.model.predict(imgs, batch_size=1, verbose=verbose)
         batch_landmarks, batch_is_pushing_up = self.postprocessing(results, paddings=paddings, original_img_sizes=original_img_sizes)

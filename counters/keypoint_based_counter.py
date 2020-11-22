@@ -22,7 +22,7 @@ class KeypointBasedCounter:
         self.magnitude_seq = [0] * max_seq_len
         self.max_seq_len = max_seq_len
         self.peaks = [0] * max_seq_len
-        self.rt_peak_finder = RealtimePeakDetector(self.angle_seq, 15, 2.5, 0.2)
+        self.rt_peak_finder = RealtimePeakDetector(self.angle_seq, 10, 2.5, 0.8)
         self.prev_peak_value = 0
         self.debug_lock = Lock()
 

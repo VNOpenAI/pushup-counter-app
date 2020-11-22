@@ -43,7 +43,6 @@ class VideoGrabber:
             self.source = "video_file"
 
         self.stream = cv2.VideoCapture(video_path)
-        print(self.stream)
         if not self.stream.isOpened():
             messagebox.showerror("Error", "Could not read from source: {}".format(video_path))
             return

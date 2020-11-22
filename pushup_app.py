@@ -54,7 +54,7 @@ while True:
     cv2.polylines(video_frame, [pts], True, (0,0,255), 3)
 
     cv2.putText(video_frame, str(is_pushing_up), (10, 50), cv2.FONT_HERSHEY_COMPLEX,  
-                   0.8, (0,0,255), 1, cv2.LINE_AA)
+                   0.4, (0,0,255), 1, cv2.LINE_AA)
 
     ui_drawer.set_frame(video_frame)
     draw = ui_drawer.render()
