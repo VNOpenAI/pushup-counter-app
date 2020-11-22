@@ -3,9 +3,9 @@ import torch.nn as nn
 class ResNeSt_head(nn.Module):
     def __init__(self, pre_model):
         super(ResNeSt_head, self).__init__()
-        pre_model.fc = nn.Identity()
-        pre_model.avgpool = nn.Identity()
-        pre_model.layer4 = nn.Identity()
+        # pre_model.fc = nn.Identity()
+        # pre_model.avgpool = nn.Identity()
+        # pre_model.layer4 = nn.Identity()
         # pre_model.layer3 = nn.Identity()
         # pre_model.layer2 = nn.Identity()
         self.pre_model = pre_model

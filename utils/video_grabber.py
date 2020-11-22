@@ -28,7 +28,7 @@ class VideoGrabber:
         self.open_stream(src)
 
 
-    def open_stream(self, video_path):
+    def open_stream(self, video_path:str):
 
         self.grabbed = False
         self.stopped = True
@@ -37,12 +37,17 @@ class VideoGrabber:
         if isinstance(video_path, int) or is_int(video_path):
             video_path = int(video_path)
             self.source = "webcam"
+        elif video_path.startswith("http"):
+            self.source = "webcam"
         else:
             self.source = "video_file"
 
         self.stream = cv2.VideoCapture(video_path)
-        if self.stream is None:
+        print(self.stream)
+        if not self.stream.isOpened():
             messagebox.showerror("Error", "Could not read from source: {}".format(video_path))
+            return
+
         if self.source == "video_file":
             self.fps = self.stream.get(cv2.CAP_PROP_FPS)
             self.spf = 1 / self.fps

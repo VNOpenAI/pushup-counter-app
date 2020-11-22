@@ -1,4 +1,5 @@
 # https://stackoverflow.com/questions/22583391/peak-signal-detection-in-realtime-timeseries-data/56451135#56451135
+
 import threading
 import time
 
@@ -28,7 +29,8 @@ def keypoint_thread(video_grabber, model, points_arr):
             frame = video_grabber.get_frame()
             points, is_pushing_up = model.predict(frame)
             points_arr[0] = points
-points_arr = [[]]
+            points_arr[1] = is_pushing_up
+points_arr = [[], 0]
 keypoint_t = threading.Thread(target=keypoint_thread, args=(video_grabber, model, points_arr))
 keypoint_t.daemon = True
 keypoint_t.start()
@@ -39,6 +41,7 @@ while True:
     
     video_frame = video_grabber.get_frame()
     points = points_arr[0]
+    is_pushing_up = points_arr[1]
     for point in points:
         x, y = tuple(point)
         draw = cv2.circle(video_frame, (x, y), 4, (0, 255, 0), -1)
@@ -49,14 +52,22 @@ while True:
     pts = pts.reshape((-1,1,2))
     cv2.polylines(video_frame, [pts], True, (0,0,255), 3)
 
+    cv2.putText(video_frame, str(is_pushing_up), (10, 50), cv2.FONT_HERSHEY_COMPLEX,  
+                   0.8, (0,0,255), 1, cv2.LINE_AA)
+
     ui_drawer.set_frame(video_frame)
     draw = ui_drawer.render()
 
     cv2.imshow("PushUp App", draw)
     
-    k = cv2.waitKey(1)
+    k = cv2.waitKey(30)
     k = k & 0xFF
     if k == ord("o"):
         video_grabber.choose_new_file()
     elif k == ord("c"):
         video_grabber.open_camera()
+    elif k == ord("q"):
+        exit(0)
+    
+    # if cv2.getWindowProperty("PushUp App", cv2.WND_PROP_VISIBLE) < 0:
+    #     exit(0)

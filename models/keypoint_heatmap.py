@@ -31,18 +31,16 @@ class KeypointHeatmapModel():
                                     transforms.ToTensor()])
 
 
-    # def build_model(self):
-    #     pre_model = resnest50(pretrained=False)
-    #     # Unfreeze model weights
-    #     for param in pre_model.parameters():
-    #         param.requires_grad = False
-    #     model = ResNeSt_head(pre_model)
-
-    #     return model
-
     def build_model(self):
-        model = TTTnet(21, 3)
+        pre_model = resnest50(pretrained=False)
+        # Unfreeze model weights
+        for param in pre_model.parameters():
+            param.requires_grad = False
+        model = ResNeSt_head(pre_model)
+
         return model
+
+
 
 
     def predict(self, origin_img):

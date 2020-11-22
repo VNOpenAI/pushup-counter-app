@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from  models.keypoint_heatmap import KeypointHeatmapModel
 
-keypoint_model_path = "data/models/keypoint/epoch81.pt"
+keypoint_model_path = "data/models/keypoint/resnest50_heatmap_filter_2111.pt"
 test_video_path = "test_data/154.mp4"
 
 model = KeypointHeatmapModel(keypoint_model_path, img_size=(225, 225))
