@@ -61,7 +61,8 @@ class VideoGrabber:
             self.open_stream(file_path)
 
     def open_camera(self):
-        answer = simpledialog.askstring("Input", "Please input camera source. Put 0 for the default webcam.", parent=root)
+        answer = simpledialog.askstring("Input", "Please input camera source. Put 0 for the default webcam.", parent=root, 
+            initialvalue="http://192.168.43.1:8080/video")
         if answer != "":
             self.open_stream(answer)
 

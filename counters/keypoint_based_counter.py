@@ -22,7 +22,7 @@ class KeypointBasedCounter:
         self.magnitude_seq = [0] * max_seq_len
         self.max_seq_len = max_seq_len
         self.peaks = [0] * max_seq_len
-        self.rt_peak_finder = RealtimePeakDetector(self.angle_seq, 10, 2.5, 0.8)
+        self.rt_peak_finder = RealtimePeakDetector(60, 10, 0.1)
         self.prev_peak_value = 0
         self.debug_lock = Lock()
 
@@ -75,6 +75,9 @@ class KeypointBasedCounter:
 
     def get_count(self):
         return self.count
+
+    def reset(self):
+        self.count = 0
 
     def preprocess(self, img):
         img = cv2.resize(img, self.img_size)

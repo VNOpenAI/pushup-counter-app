@@ -1,10 +1,10 @@
-import time
-
 import cv2
 import numpy as np
-import tensorflow as tf
-import tensorflow.keras.backend as K
 from tensorflow.keras.models import load_model
+import tensorflow as tf
+import keras2onnx
+import onnxruntime
+import tensorflow.keras.backend as K
 from utils.common import square_padding
 
 
@@ -41,19 +41,31 @@ class TwoHeadModel():
 
     def __init__(self, model_path, img_size=(224, 224)):
         self.model = load_model(model_path, custom_objects={'FixedDropout':FixedDropout, 'landmark_loss_func': landmark_loss()}, compile=False)
-        self.model.predict(np.zeros((1, 224, 224, 3), dtype=float))
+
+        # convert to onnx model
+        onnx_model = keras2onnx.convert_keras(self.model, self.model.name)
+
+        # runtime prediction
+        content = onnx_model.SerializeToString()
+        # self.model.predict(np.zeros((1, 224, 224, 3), dtype=float))
+
+        self.ort_session = onnxruntime.InferenceSession(content)
         self.img_size = img_size
+
+    def to_numpy(self, tensor):
+        return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
     def predict(self, origin_img):
         batch_landmarks, batch_is_pushing_up = self.predict_batch(np.array([origin_img]))
         return batch_landmarks[0], batch_is_pushing_up[0]
 
-    def predict_batch(self, imgs, verbose=0):
+    def predict_batch(self, imgs, verbose=1):
         imgs, original_img_sizes, paddings = self.preprocessing(imgs)
-        st = time.time()
-        results = self.model.predict(imgs, batch_size=1, verbose=verbose)
-        en = time.time()
-        print(en-st)
+        # results = self.model.predict(imgs, batch_size=1, verbose=verbose)
+        ort_inputs = {self.ort_session.get_inputs()[0].name: self.to_numpy(imgs)}
+        ort_outs = self.ort_session.run(None, ort_inputs)
+        results = ort_outs
+
         batch_landmarks, batch_is_pushing_up = self.postprocessing(results, paddings=paddings, original_img_sizes=original_img_sizes)
         return batch_landmarks, batch_is_pushing_up
 

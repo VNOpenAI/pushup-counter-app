@@ -12,7 +12,7 @@ from counters.optical_flow_counter import OpticalFlowCounter
 from counters.keypoint_based_counter import KeypointBasedCounter
 from utils.ui_drawer import UIDrawer
 
-keypoint_model_path = "data/models/2heads/efficientnetb2_2head_angle_ep030.h5"
+keypoint_model_path = "data/models/2heads/efficientnetb2_2head_ep060.h5"
 test_video_path = "test_data/154.mp4"
 # test_video_path = "http://192.168.43.1:8080/video"
 
@@ -65,8 +65,14 @@ while True:
     k = k & 0xFF
     if k == ord("o"):
         video_grabber.choose_new_file()
+        points_arr[0] = []
+        points_arr[1] = 0
+        kp_counter.reset()
     elif k == ord("c"):
         video_grabber.open_camera()
+        points_arr[0] = []
+        points_arr[1] = 0
+        kp_counter.reset()
     elif k == ord("q"):
         exit(0)
     

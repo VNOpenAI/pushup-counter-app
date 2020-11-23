@@ -9,6 +9,7 @@ from models.ttt_net import TTTnet
 import onnx
 from tensorflow.keras.models import load_model
 import onnxruntime
+from onnx2keras import onnx_to_keras
 
 class KeypointHeatmapModel():
 
@@ -28,6 +29,9 @@ class KeypointHeatmapModel():
         # Create the right input shape (e.g. for an image)
         dummy_input = torch.randn(1, 3, img_size[1], img_size[0])
         torch.onnx.export(self.model, dummy_input, "tmp.onnx")
+        onnx_model = onnx.load('tmp.onnx')
+        k_model = onnx_to_keras(onnx_model, ['input'])
+
         self.img_size = img_size
 
         # Init transformation
