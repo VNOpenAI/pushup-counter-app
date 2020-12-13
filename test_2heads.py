@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 from utils import common
-from  models.two_head import TwoHeadModel
+from  models.two_head_onnx import TwoHeadModel
 
 model_path = "data/models/2heads/efficientnetb2_2head_ep030.h5"
-test_video_path = "test_data/videos/154.mp4"
+test_video_path = "test_data/videos/300.mp4"
 net_input_size = (224, 224)
 
 model = TwoHeadModel(model_path=model_path, img_size=net_input_size)

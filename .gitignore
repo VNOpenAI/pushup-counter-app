@@ -3,3 +3,4 @@ __pycache__
 /.vscode
 /test_data
 /data
+/trained_models
