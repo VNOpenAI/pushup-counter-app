@@ -11,7 +11,7 @@ class PushUpRecognizer():
 
         self.model = tf.keras.models.load_model(
             model_path, compile=False)
-        self.filter = SimpleKalmanFilter(2, 0.01, 0.1, 0.5)
+        self.filter = SimpleKalmanFilter(2, 2, 2, 0.5)
         self.last_score_raw = 0.5
         self.current_score_raw = 0
         self.current_score = 0

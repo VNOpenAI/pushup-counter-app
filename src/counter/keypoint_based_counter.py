@@ -30,6 +30,8 @@ class KeypointBasedCounter:
         self.peak_img = None
         self.max_value = 1
 
+        self.counting = True
+
     def update_points(self, points):
 
         new_data_point = 0
@@ -71,7 +73,11 @@ class KeypointBasedCounter:
         return arr
 
     def increase_count(self):
-        self.count += 1
+        if self.counting:
+            self.count += 1
+
+    def set_counting(self, counting):
+        self.counting = counting
 
     def get_count(self):
         return self.count
